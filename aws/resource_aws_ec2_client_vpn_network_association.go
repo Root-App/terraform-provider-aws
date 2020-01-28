@@ -80,9 +80,14 @@ func resourceAwsEc2ClientVpnNetworkAssociationRead(d *schema.ResourceData, meta 
 	conn := meta.(*AWSClient).ec2conn
 	var err error
 
+	filter := &ec2.Filter{
+		Name:   aws.String("association-id"),
+		Values: []*string{aws.String(d.Id())},
+	}
+
 	result, err := conn.DescribeClientVpnTargetNetworks(&ec2.DescribeClientVpnTargetNetworksInput{
 		ClientVpnEndpointId: aws.String(d.Get("client_vpn_endpoint_id").(string)),
-		AssociationIds:      []*string{aws.String(d.Id())},
+		Filters:             []*ec2.Filter{filter},
 	})
 
 	if isAWSErr(err, "InvalidClientVpnAssociationId.NotFound", "") || isAWSErr(err, "InvalidClientVpnEndpointId.NotFound", "") {
@@ -153,9 +158,14 @@ func resourceAwsEc2ClientVpnNetworkAssociationDelete(d *schema.ResourceData, met
 
 func clientVpnNetworkAssociationRefreshFunc(conn *ec2.EC2, cvnaID string, cvepID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
+		filter := &ec2.Filter{
+			Name:   aws.String("association-id"),
+			Values: []*string{aws.String(cvnaID)},
+		}
+
 		resp, err := conn.DescribeClientVpnTargetNetworks(&ec2.DescribeClientVpnTargetNetworksInput{
 			ClientVpnEndpointId: aws.String(cvepID),
-			AssociationIds:      []*string{aws.String(cvnaID)},
+			Filters:             []*ec2.Filter{filter},
 		})
 
 		if isAWSErr(err, "InvalidClientVpnAssociationId.NotFound", "") || isAWSErr(err, "InvalidClientVpnEndpointId.NotFound", "") {
