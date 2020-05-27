@@ -124,7 +124,7 @@ func resourceAwsLbTargetGroup() *schema.Resource {
 			"load_balancing_algorithm_type": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  "round_robin",
+				Computed: true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"round_robin",
 					"least_outstanding_requests",
